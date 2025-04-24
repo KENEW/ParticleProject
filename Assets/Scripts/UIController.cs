@@ -38,7 +38,7 @@ public class UIController : MonoBehaviour
 
     private void Start()
     {
-        Screen.SetResolution(1080, 1920, false);
+        Screen.SetResolution(720, 1280, false);
         feverGaugeImageSizeX = gaugeImage.rectTransform.sizeDelta.x;
     }
     
