@@ -1,19 +1,19 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class Crane : MonoBehaviour
+public class LootBox : MonoBehaviour
 {
     [SerializeField] private UIController uiController;
+    
+    private PrizeData prizeData;
     
     private bool isFever = false;
     private bool isBoxOpen = false;
     private bool isRareEffect = false;
-    
-    private int maxHitCount = 10;
     private int currentHitCount = 0;
+    private float openBoxDelay = 1.0f;
     
-    private PrizeData prizeData;
+    private const int MAX_HIT_COUNT = 5;
  
     public void AddHit() => currentHitCount++;
     
@@ -28,13 +28,13 @@ public class Crane : MonoBehaviour
                 HitFeverButton();        
             }
             
-            if (currentHitCount >= 10)
+            if (currentHitCount >= MAX_HIT_COUNT)
             {
                 PrizeProductionScreen();
             }
         }
         
-        uiController.UpdateHitGauge(currentHitCount, maxHitCount);
+        uiController.UpdateHitGauge(currentHitCount, MAX_HIT_COUNT);
         
         // 박스가 오픈 중인 상태일 때 카메라 흔들기
         if (isBoxOpen)
@@ -67,7 +67,7 @@ public class Crane : MonoBehaviour
         SoundManager.Instance.PlaySFX("FeverChanceOpenSFX");
         CameraController.Instance.Scale = 5;
         isBoxOpen = true;
-        
+
         StartCoroutine(GiftBoxResultCo());
     }
 
@@ -77,17 +77,32 @@ public class Crane : MonoBehaviour
     private IEnumerator GiftBoxResultCo()
     {
         SoundManager.Instance.PlaySFX("BoxOpenSFX");
-        yield return new WaitForSeconds(2f);
+        
+        yield return new WaitForSeconds(0.2f);
+        
+        uiController.effectFeverPanel.SetActive(false);
+        uiController.rareEffect.SetActive(true);
+        
+        // 전설 등급이면 조금 늦게 상자를 연다.
+        if (prizeData.rarity == Rarity.Legendary)
+        {
+            openBoxDelay = 2.3f;
+        }
+        else
+        {
+            openBoxDelay = 1.8f;
+        }
+
+        yield return new WaitForSeconds(openBoxDelay);
         
         isFever = false;
-        isBoxOpen = false;
-
-        uiController.RunScreenFade(false);
+        uiController.RunScreenFade(() => { isBoxOpen = false; }, false );
         
         yield return new WaitForSeconds(0.5f);
         
+
         uiController.ShowGifBoxResult();
-        uiController.RunScreenFade(true);
+        uiController.RunScreenFade(null, true);
     }
     
     /// <summary>
@@ -102,6 +117,7 @@ public class Crane : MonoBehaviour
         
         uiController.ReDraw();
         uiController.SetPrizeResultUI(prizeData);
+        uiController.rareEffect.SetActive(false);
         
         // 다음 선물 상자가 에픽 등급의 이상이면 효과를 보여준다.
         if (prizeData.rarity == Rarity.Epic || prizeData.rarity == Rarity.Legendary)

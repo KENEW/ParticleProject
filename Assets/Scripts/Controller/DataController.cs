@@ -1,21 +1,28 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class DataController : MonoSingleton<DataController>
 {
     [SerializeField] private Rarity nextPrizeRarity;
     [SerializeField] private PrizeDataSO prizeDataSO;
     
-    private List<PrizeData> prizeData;
+    [SerializeField] private DebugUI debugUI;
+    
+    private List<PrizeData> prizeDataList;
+    private PrizeData currentPrizeData;
 
-    public Rarity GetNextPrizeRairity() => nextPrizeRarity;
-
+    public PrizeData GetCurrentPrizeData()
+    {
+        return currentPrizeData;
+    }
+    
     /// <summary>
     /// 상품의 데이터들을 불러옵니다.
     /// </summary>
     public void LoadPrizeData()
     {
-        prizeData = prizeDataSO.prizeDataList;
+        prizeDataList = prizeDataSO.prizeDataList;
     }
 
     /// <summary>
@@ -23,10 +30,20 @@ public class DataController : MonoSingleton<DataController>
     /// </summary>
     public PrizeData GetNextPrize()
     {
+        if (debugUI.GetCurrentRandomMode)
+        {
+            nextPrizeRarity = (Rarity)Random.Range(0, 4);
+        }
+        else
+        {
+            nextPrizeRarity = debugUI.GetCurrentLevel;
+        }
+        
         foreach (var currentPrizeData in prizeDataSO.prizeDataList)
         {
             if (currentPrizeData.rarity == nextPrizeRarity)
             {
+                this.currentPrizeData = currentPrizeData;
                 return currentPrizeData;
             }
         }

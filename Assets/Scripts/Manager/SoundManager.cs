@@ -23,8 +23,6 @@ public class SoundManager : MonoSingleton<SoundManager>
             Destroy(this.gameObject);
         }
         
-        DontDestroyOnLoad(this.gameObject);
-
         sfxPlayer = transform.GetChild(0).GetComponent<AudioSource>();
         bgmPlayer = transform.GetChild(1).GetComponent<AudioSource>();
 
@@ -43,10 +41,5 @@ public class SoundManager : MonoSingleton<SoundManager>
         }
         
         sfxPlayer.PlayOneShot(audioClipsDic[name]);
-    }
-
-    public void PlayBGM()
-    {
-
     }
 }

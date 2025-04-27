@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -21,27 +22,30 @@ public class UIController : MonoBehaviour
     public GameObject effectFeverPanel;
     public Image gaugeImage;
     public GameObject giftBoxObject;
-    public GameObject giftBoxRareEffect;
-    public GameObject[] giftBoxEffects;
     public SpriteRenderer giftBoxSpriteRenderer;
     public Sprite[] giftBoxSprites = new Sprite[2]; // 0 : Close, 1 : Open
+    
+    [Header("Particle System")]
+    public GameObject giftBoxRareEffect;
+    public GameObject[] giftBoxEffects;
+    public GameObject rareEffect;
     
     [Header("Aniamtor")]
     public Animator giftBoxAnimator;
     public Animator downPanelAnimator;
     public Animator giftThrowAnimator;
     
-    private const int FEVER_CHANCE_GAUGE_SPEED = 8;
-    
-    private float feverGaugeImageSizeX;
     private PrizeData prizeData;
 
+    private float feverGaugeImageSizeX;
+    
+    private const int FEVER_CHANCE_GAUGE_SPEED = 8;
+    
     private void Start()
     {
         Screen.SetResolution(720, 1280, false);
         feverGaugeImageSizeX = gaugeImage.rectTransform.sizeDelta.x;
     }
-    
     
     /// <summary>
     /// 1회 히트의 기능을 표현
@@ -84,7 +88,7 @@ public class UIController : MonoBehaviour
     public void ShowPrizeImage()
     {
         prizeImage.SetActive(true);
-        prizeImage.GetComponent<Image>().sprite = DataController.Instance.GetNextPrize().sprite;
+        prizeImage.GetComponent<Image>().sprite = DataController.Instance.GetCurrentPrizeData().sprite;
         prizeImage.GetComponent<Image>().SetNativeSize();
     }
 
@@ -150,11 +154,11 @@ public class UIController : MonoBehaviour
     /// <summary>
     /// 페이드 화면을 출력
     /// </summary>
-    public void RunScreenFade(bool isReverse = false)
+    public void RunScreenFade(Action callBack = null, bool isReverse = false)
     {
         if (!isReverse)
         {
-            StartCoroutine(FlashFade());
+            StartCoroutine(FlashFade(callBack));
         }
         else
         {
@@ -165,7 +169,7 @@ public class UIController : MonoBehaviour
     /// <summary>
     /// 상품이 공개될 때 빛이 번쩍하는 페이드 효과를 적용
     /// </summary>
-    private IEnumerator FlashFade()
+    private IEnumerator FlashFade(Action callBack)
     {
         Image flashFadePanelImage = flashFadePanel.GetComponent<Image>();
         
@@ -182,6 +186,7 @@ public class UIController : MonoBehaviour
         }
         
         flashFadePanelImage.color = Color.white;
+        callBack?.Invoke();
         
         giftBoxRareEffect.SetActive(false);
         giftBoxObject.SetActive(false);
